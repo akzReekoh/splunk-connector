@@ -1,0 +1,14 @@
+{
+	"token": {
+		"label": "Token",
+		"type": "Password",
+		"required": true,
+		"help": "Please provide your Splunk Token."
+	},
+	"url": {
+		"label": "URL",
+		"type": "String",
+		"required": true,
+		"help": "Please provide your Splunk instance URL."
+	}
+}
