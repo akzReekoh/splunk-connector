@@ -1,7 +1,7 @@
 {
-  "name": "connector-plugin-seed",
-  "description": "Connector Plugin seed project for the Reekoh IoT Platform. Helps engineers to start developing connector plugins for the Reekoh IoT Platform.",
-  "version": "1.0.1",
+  "name": "splunk-connector",
+  "description": "Splunk Connector Plugin for the Reekoh IoT Platform. Integrates a Reekoh Instance to Splunk.",
+  "version": "1.0.2",
   "author": "Reekoh, Inc.",
   "main": "app.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Reekoh/connector-plugin-seed"
+    "url": "https://github.com/Reekoh/splunk-connector"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
