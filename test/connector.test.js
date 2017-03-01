@@ -1,60 +1,58 @@
-'use strict';
+'use strict'
 
-var cp        = require('child_process'),
-	should    = require('should'),
-	deviceId1 = Date.now(),
-	connector;
+const amqp = require('amqplib')
 
-describe('Connector', function () {
-	this.slow(5000);
+let _channel = null
+let _conn = null
+let app = null
 
-	after('terminate child process', function (done) {
-		this.timeout(7000);
+describe('Splunk Connector Test', () => {
+  before('init', () => {
+    process.env.ACCOUNT = 'adinglasan'
+    process.env.CONFIG = JSON.stringify({
+      url : 'http://54.174.219.239:8088',
+      token: '7871D514-7506-41AA-A7C1-9C6F8B104E41'
+    })
+    process.env.INPUT_PIPE = 'ip.splunk'
+    process.env.LOGGERS = 'logger1, logger2'
+    process.env.EXCEPTION_LOGGERS = 'ex.logger1, ex.logger2'
+    process.env.BROKER = 'amqp://guest:guest@127.0.0.1/'
 
-		setTimeout(function () {
-			connector.kill('SIGKILL');
-			done();
-		}, 5000);
-	});
+    amqp.connect(process.env.BROKER)
+      .then((conn) => {
+        _conn = conn
+        return conn.createChannel()
+      }).then((channel) => {
+      _channel = channel
+    }).catch((err) => {
+      console.log(err)
+    })
+  })
 
-	describe('#spawn', function () {
-		it('should spawn a child process', function () {
-			should.ok(connector = cp.fork(process.cwd()), 'Child process not spawned.');
-		});
-	});
+  after('close connection', function (done) {
+    _conn.close()
+    done()
+  })
 
-	describe('#handShake', function () {
-		it('should notify the parent process when ready within 5 seconds', function (done) {
-			this.timeout(5000);
+  describe('#start', function () {
+    it('should start the app', function (done) {
+      this.timeout(10000)
+      app = require('../app')
+      app.once('init', done)
+    })
+  })
 
-			connector.on('message', function (message) {
-				if (message.type === 'ready')
-					done();
-			});
+  describe('#data', () => {
+    it('should send data to third party client', function (done) {
+      this.timeout(15000)
 
-			connector.send({
-				type: 'ready',
-				data: {
-					options: {
-						url : '',
-						token: ''
-					}
-				}
-			}, function (error) {
-				should.ifError(error);
-			});
-		});
-	});
+      let data = {
+        title: 'String data',
+        data: 'Sample String Log Data'
+      }
 
-	describe('#data', function (done) {
-		it('should process the data', function () {
-			connector.send({
-				type: 'data',
-				data: {
-					title: 'String data',
-					data: 'Sample String Log Data'
-				}
-			}, done);
-		});
-	});
-});
+      _channel.sendToQueue('ip.splunk', new Buffer(JSON.stringify(data)))
+      setTimeout(done, 10000)
+    })
+  })
+})
